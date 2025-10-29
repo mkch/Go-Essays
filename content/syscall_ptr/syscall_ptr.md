@@ -41,7 +41,7 @@ func KeepAlive(x any) {
 
 ### 使用场景
 
-`runtime.KeepAlive`用于保证finalizer不会被过早调用。这种情况一般发生在obj的一部分被传递（复制）给了syscall，并且在syscall之后没有其他对obj的引用的场合。此时如果不在syscall之后使用`runtime.KeepAlive(obj)`，则obj的finalizer可能在syscall完成之前被调用。参看`runtime.KeepAlive`的[文档](https://pkg.go.dev/runtime#KeepAlive)。
+`runtime.KeepAlive`用于保证finalizer不会被过早调用。这种情况一般发生在obj的一部分被传递（复制）给了syscall，并且在syscall之后没有其他对obj的引用的场合。此时如果不在syscall之后使用`runtime.KeepAlive(obj)`，则obj的finalizer可能在syscall完成之前被调用。参看`runtime.KeepAlive`的[文档](https://pkg.go.dev/runtime#KeepAlive)以及这个可运行的[例子](https://go.dev/play/p/ebh1TIrgtDO)。
 
 `//go:uintptrescapes`用于标定必须把Go指针转换为uintptr传递给syscall的场景。
 
