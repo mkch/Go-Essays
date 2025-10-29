@@ -7,4 +7,4 @@
 ### [Go调用syscall时指针的处理](content/syscall_ptr/syscall_ptr.md)
 
 ---
-本作品采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/") 许可协议授权。
+本作品采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 许可协议授权。
