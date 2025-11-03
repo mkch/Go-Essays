@@ -115,7 +115,7 @@ func main() {
 
 运行这个代码，单击鼠标，窗口上会显示一个实心圆和圆心处的一个点。当然，这一切都只能存在于我们的脑海中，实际上我们看到的只是如下两行输出：
 
-```
+```text
 Draw a solid circle at (100, 200)
 Draw a dot at (100, 200)
 ```
@@ -208,6 +208,42 @@ Draw a solid circle at (100, 200)
 为了突出重点，这个例子以及上面的例子都没有给出圆的直径，毕竟这些绘图操作需要我们去脑补，那就不不妨再脑补出一个合适的直径吧。
 
 熟悉设计模式的朋友可能早就看出来了，这种“链式”处理事件的方式，正是责任链模式（Chain of Responsibility Pattern）的一个简单变种。
+
+当然，如果要扣上责任“链”这个题，那么使用链表来实现这个模式也是可以的：
+
+```go
+type ClickHandler func(x, y int, next func(x, y int))
+
+// onClickChainItem is a list item of the chain handler list.
+type onClickChainItem struct {
+    Handler ClickHandler
+    Next    *onClickChainItem
+}
+
+// Call passes a click event to a handler item.
+func (item *onClickChainItem) Call(x, y int) {
+    if item == nil {
+        return
+    }
+    item.Handler(x, y, item.Next.Call)
+}
+
+type Window struct {
+    // A list(chain) of handlers for click events.
+    onClickChainHead *onClickChainItem
+}
+
+func (w *Window) AddOnClickHandler(handler ClickHandler) {
+    old := w.onClickChainHead
+    w.onClickChainHead = &onClickChainItem{Handler: handler, Next: old}
+}
+
+func (w *Window) NotifyClick(x, y int) {
+    w.onClickChainHead.Call(x, y)
+}
+```
+
+虽然这么做看起来要复杂一些（代码量大），但可以实现诸如删除已加入的Handler的功能。
 
 ## 中间件
 
