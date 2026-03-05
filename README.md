@@ -10,5 +10,7 @@
 
 ### 3. [如何实现“互斥接口”](content/mutually_exclusive_interfaces/mutually_exclusive_interfaces.md)
 
+### 4. [浮点数比较的容差](content/float_tolerance/float_tolerance.md)
+
 ---
 本作品采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 许可协议授权。
