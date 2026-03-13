@@ -12,7 +12,7 @@
 
 ### 4. [浮点数比较的容差](content/float_tolerance/float_tolerance.md)
 
-### 5. [有趣的浮点数](content/float64bits/float64bits.md)
+### 5. [有趣的 Float64](content/float64bits/float64bits.md)
 
 ---
 本作品采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 许可协议授权。
