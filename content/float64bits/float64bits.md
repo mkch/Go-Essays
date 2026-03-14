@@ -294,7 +294,7 @@ $RP_{Subnormal} = \frac{ULP_{Subnormal}}{|Value|} = \frac{2^{-1074}}{(0.f)×2^{-
 
 $\epsilon × |Value| = 2^{-52} × (1.f_{Value} × ULP_{Value} × 2^{52}) = ULP_{Value} × 1.f_{Value}$
 
-由于 $1.f_a \in [1, 2)$，因此
+由于 $1.f_{Value} \in [1, 2)$，因此
 
 $\epsilon × |Value| \in [ULP_{Value}, \ 2 × ULP_{Value})$
 
