@@ -174,8 +174,6 @@ $(-1)^S × (1 + M×2^{-52}) × 2^{E-1023}$
                 00000000     00000000           00000000    00000000                          
 ```
 
-![float64的位模式与数值的关系。](./image/Gemini_Generated_Image_bit-pattern.png)
-
 ### ULP（Unit in the Last Place）
 
 ULP是指两个相邻的float64数值之间的差值的绝对值。ULP较小，表示在浮点数的分布较密集；ULP较大，表示浮点数的分布较稀疏。
@@ -290,19 +288,21 @@ $RP_{Subnormal} = \frac{ULP_{Subnormal}}{|Value|} = \frac{2^{-1074}}{(0.f)×2^{-
 
 ### 容差比较法
 
-对于正规数而言， $RP = \frac{2^{-52}}{1.f}$ ，其最小值为 $2^{-52}$ ，假设我们指定一个容差 $\epsilon = N × 2^{-52}$ ，那么
+对于正规数而言， $RP = \frac{2^{-52}}{1.f}$ ，其最小值为 $2^{-52}$，这个值被称作float64的机器精度（Machine Epsilon），用 $\epsilon$ 表示。
 
-$\epsilon × |Value| = (N × 2^{-52}) × (ULP_{Value} × 1.f_{Value} × 2^{52}) = N × ULP_{Value} × 1.f_{Value}$
+根据正规数的ULP公式， $|Value| = 1.f_{Value} × 2^e = 1.f_{Value} × 2^e × 2^{-52} ×  2^{52} = 1.f_{Value} × ULP_{Value} × 2^{52}$。假设我们以 $\epsilon$ 为容差，那么
+
+$\epsilon × |Value| = 2^{-52} × (1.f_{Value} × ULP_{Value} × 2^{52}) = ULP_{Value} × 1.f_{Value}$
 
 由于 $1.f_a \in [1, 2)$，因此
 
-$N × ULP_{Value} ≤ （\epsilon × |Value|） < 2 × N × ULP_{Value}$ 。
+$\epsilon × |Value| \in [ULP_{Value}, \ 2 × ULP_{Value})$
 
-于是 $\epsilon × \max (|a|, |b|)$ 的值在会永远落在 $ULP_a$ 和 $ULP_b$ 最大值的N倍和2N倍之间。
+即 $\epsilon × \max (|a|, |b|)$ 的值在会永远落在 $ULP_a$ 和 $ULP_b$ 最大值的1倍和2倍之间。
 
-如果在比较两个正规数a和b是否足够接近时，指定一个相对容差 $\epsilon$ ，并让实际参与比较的容差值为 $\epsilon × \max (|a|, |b|)$ ，则无论a和b的大小如何，比较结果都能保持基本稳定。
+如果在比较两个正规数a和b是否足够接近时，指定一个相对容差 $tol = N × \epsilon$ ，并让实际参与比较的容差值为 $tol × \max (|a|, |b|)$ ，则无论a和b的大小如何，此值都将落在最大ULP的N倍和2N倍之间，这是一个非常稳定的比较方法。
 
-但是当a和b中有一个（例如b）的绝对值趋近于0时，相对容差比较就变成判断 $|a-0| < \epsilon × \max (|a|, |0|)$ 是否成立。上述断言可简化为 $|a| < \epsilon × |a|$ ，即判断 $\epsilon > 1$ 是否成立，这显然是不合适的。此时相对容差比较法就失效了。
+但是当a和b中有一个（例如b）的绝对值趋近于0时，相对容差比较就变成判断 $|a-0| < tol × \max (|a|, |0|)$ 是否成立。上述断言可简化为 $|a| < tol × |a|$ ，即判断 $tol > 1$ 是否成立，这显然是不合适的。此时相对容差比较法就失效了。
 
 对于次正规数而言，由于它的的绝对精度是恒定的，所以绝对容差比较法更为合适。
 
