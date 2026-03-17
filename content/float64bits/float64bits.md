@@ -207,6 +207,8 @@ $ULP_{Subnormal}(x) = 2^{-1074}$
 
 ULP距离是指两个float64数值之间的ULP数量。
 
+#### 牛刀小试
+
 对于两个非无穷大、非NaN的float64数值`f1`和`f2`，它们之间的ULP距离可以通过以下代码计算：
 
 ```go
@@ -248,6 +250,37 @@ func ulpDistance(f1, f2 float64) uint64 {
 ![Ordered bit pattern](image/ordered-bits-ranges.png)
 
 这里面还有一个边界条件需要注意：`-0`被映射到0x7FFFFFFFFFFFFFFF，而`+0`被映射到0x8000000000000000，它俩之间的ULP距离为1而不是0。
+
+#### 充分优化
+
+有一种充分优化的计算两个float64数值之间的ULP距离的算法：
+
+```go
+// ulpDistance calculates the ULP distance between two float64 values.
+func ulpDistance(f1, f2 float64) uint64 {
+    if math.IsNaN(f1) || math.IsNaN(f2) || math.IsInf(f1, 0) || math.IsInf(f2, 0) {
+        panic("can't calculate ULP distance for NaN or Inf")
+    }
+    u1 := math.Float64bits(f1)
+    u2 := math.Float64bits(f2)
+    // Same sign, distance is the difference of the bit patterns.
+    if int64(u1^u2) >= 0 {
+        if u1 > u2 {
+            return u1 - u2
+        }
+        return u2 - u1
+    }
+    // Different signs, distance is the sum of the distances to zero.
+    // +0x8000000000000000 zeros out the sign bit.
+    return u1 + u2 + 0x8000000000000000
+}
+```
+
+这个算法中有两个关键的优化点：
+
+- 使用`int64(u1^u2) >= 0`来判断两个float64数值的符号是否相同：如果两个数值的符号相同，那么它们的位模式的最高位（符号位）也相同，因此它们的异或结果的最高位为0，转换为`int64`后是非负数；如果两个数值的符号不同，那么它们的位模式的最高位不同，因此它们的异或结果的最高位为1，转换为`int64`后是负数。
+
+- 使用`u1 + u2 + 0x8000000000000000`来计算两个符号不同的数值之间的ULP距离：`u1 + u2`是两个数值分别到0的距离之和，但结果的最高位是反的：如果u1和u2的低63位相加不溢出，最高位本应是0但实际为1；如果溢出，最高位本应是1但实际为0。加上`0x8000000000000000`相当于纠正了结果的符号位。这个技巧也避免了+0和-0之间ULP距离不为0的边界情况。
 
 ### 绝对精度与相对精度
 
