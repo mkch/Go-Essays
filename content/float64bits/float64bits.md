@@ -217,7 +217,7 @@ func ulpDistance(f1, f2 float64) uint64 {
     var orderedBits = func(f float64) uint64 {
         u := math.Float64bits(f)
         if u&(1<<63) != 0 {
-            return ^u
+            return ^u + 1
         }
         return u | (1 << 63)
     }
@@ -239,17 +239,19 @@ func ulpDistance(f1, f2 float64) uint64 {
 
 `orderedBits()`函数的实现逻辑如下：
 
-- 如果float64数值的符号位为1（负数），则对其位模式取反，使得所有负数依次映射到0～0x7FFFFFFFFFFFFFFF区间内，其中`-0`被映射到0x7FFFFFFFFFFFFFFF；
+- 如果float64数值的符号位为1（负数），则对其位模式取反再+1，使得所有负数依次映射到1～0x8000000000000000区间内，其中`-0`被映射到0x8000000000000000；
 
 - 如果float64数值的符号位为0（正数），则把其最高位设置为1，使得所有正数都映射到0x8000000000000000～0xFFFFFFFFFFFFFFFF区间内，其中`+0`被映射到0x8000000000000000。
 
 这两个映射中，第二个比较简单：正数的位模式本来就是单调递增的，把其最高位设置为1等于把它们在数轴上向右平移了0x8000000000000000个位置，仍然保持单调递增。
 
-由于对一个`uint64`值取等价于从`uint64`的最大值0xFFFFFFFFFFFFFFFF中减去它，因此第一个映射相当于把所有负数在数轴上以位模式0为对称中心进行翻转。这样一来，映射后的负数从单调递减变为单调递增，并且与正数的映射结果在数轴上连续排列。翻转后的数轴如下图所示：
+由于对一个`uint64`值取反等价于从`uint64`的最大值0xFFFFFFFFFFFFFFFF中减去它，因此第一个映射中的`^u`相当于把所有负数在数轴上以位模式0为对称中心进行翻转。这样一来，映射后的负数从单调递减变为单调递增，并且与正数的映射结果在数轴上连续排列。翻转后的数轴如下图所示：
 
-![Ordered bit pattern](image/ordered-bits-ranges.png)
+![Ordered bit pattern 1](image/ordered-bits-ranges-1.png)
 
-这里面还有一个边界条件需要注意：`-0`被映射到0x7FFFFFFFFFFFFFFF，而`+0`被映射到0x8000000000000000，它俩之间的ULP距离为1而不是0。
+这里面还有一个边界条件需要注意：`-0`被映射到0x7FFFFFFFFFFFFFFF，而`+0`被映射到0x8000000000000000，它俩之间的ULP距离为1而不是0。为了解决这个问题，此算法中对取反后的位模式`+1`，即把反转后的负数区间再向右平移1个单位。平移后的数轴如下图所示：
+
+![Ordered bit pattern](image/ordered-bits-ranges-2.png)
 
 #### 充分优化
 
