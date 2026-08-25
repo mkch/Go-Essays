@@ -25,9 +25,9 @@ func KeepAlive(x any) {
 
 ## 3）//go:uintptrescapes
 
-用于指定一个函数的`uintptr`类型的参数实际上是Go对象指针（从Go指针强制转换而来），该对象会espace到heap且keep alive直到该函数调用结束。参看此Directive的[文档](https://pkg.go.dev/cmd/compile#hdr-Compiler_Directives)。
+用于指定一个函数的`uintptr`类型的参数实际上是Go对象指针（从Go指针强制转换而来），该对象会escape到heap且keep alive直到该函数调用结束。参看此Directive的[文档](https://pkg.go.dev/cmd/compile#hdr-Compiler_Directives)。
 
-此类函数时会用到诸如`syscall.Syscall(…… uintptr(unsafe.Pointer(p)) ……)`的形式，而`unsafe.Pointer`的[转换规则](https://pkg.go.dev/unsafe#Pointer)(4)中提到“编译器在处理传递给用汇编实现的函数的参数时，如果参数是从`unsafe.Pointer`转换为`uintptr`的，则会保证此指针所引用的对象在调用结束前不被释放和移动（is retained and not moved until the call completes）”。据此可推导出，被标定为`//go:uintptrescapes`的函数，如果正确地使用unsafe转换来调用syscall，那么它的参数所引用的内存也会和cgo调用[^2]一样被pin。
+在调用此类函数时，通常会使用诸如`syscall.Syscall(…… uintptr(unsafe.Pointer(p)) ……)`的形式，而`unsafe.Pointer`的[转换规则](https://pkg.go.dev/unsafe#Pointer)(4)中提到“编译器在处理传递给用汇编实现的函数的参数时，如果参数是从`unsafe.Pointer`转换为`uintptr`的，则会保证此指针所引用的对象在调用结束前不被释放和移动（is retained and not moved until the call completes）”。据此可推导出，被标定为`//go:uintptrescapes`的函数，如果正确地使用unsafe转换来调用syscall，那么它的参数所引用的内存也会和cgo调用[^2]一样被pin。
 
 ## 总结
 
